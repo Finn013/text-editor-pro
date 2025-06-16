@@ -233,7 +233,7 @@
       gap: 0.375rem;
       padding: 0.5rem 0.75rem;
       background: transparent;
-      border: 1px solid transparent;
+      border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       cursor: pointer;
       font-size: 0.875rem;
@@ -246,7 +246,7 @@
     .toolbar-button:hover {
       background: var(--bg-tertiary);
       color: var(--text-primary);
-      border-color: var(--border);
+      border-color: var(--primary);
     }
 
     .toolbar-button.active {
@@ -353,6 +353,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
+      position: relative;
     }
 
     td, th {
@@ -360,11 +361,40 @@
       padding: 0.75rem;
       text-align: left;
       background: var(--bg-primary);
+      position: relative;
     }
 
     th {
       background: var(--bg-tertiary);
       font-weight: 600;
+    }
+
+    /* Table controls */
+    .table-controls {
+      position: absolute;
+      top: -30px;
+      right: 0;
+      display: none;
+      gap: 0.25rem;
+    }
+
+    table:hover .table-controls {
+      display: flex;
+    }
+
+    .table-btn {
+      padding: 0.25rem 0.5rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .table-btn:hover {
+      background: var(--primary-dark);
     }
 
     /* Mobile-specific styles */
@@ -490,6 +520,113 @@
       color: var(--success);
     }
 
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 1.5rem 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 0 1.5rem 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      margin-bottom: 1rem;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .modal-button {
+      padding: 0.75rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-button.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .modal-button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .modal-button.secondary {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .modal-button.secondary:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
@@ -543,6 +680,15 @@
         padding: 0.25rem;
         min-width: 32px;
         min-height: 32px;
+      }
+
+      .modal {
+        width: 95%;
+        margin: 1rem;
+      }
+
+      .modal-header, .modal-body, .modal-footer {
+        padding: 1rem;
       }
     }
 
@@ -654,6 +800,10 @@
               <span class="icon">💾</span>
               Сохранить
             </button>
+            <button class="dropdown-item" onclick="copyAllText(); closeAllDropdowns();">
+              <span class="icon">📋</span>
+              Копировать всё
+            </button>
             <button class="dropdown-item" onclick="saveAs('html'); closeAllDropdowns();">
               <span class="icon">🌐</span>
               Экспорт HTML
@@ -693,6 +843,9 @@
         <button class="toolbar-button" onclick="formatText('justifyCenter')" title="По центру">
           <span class="icon">↔️</span>
         </button>
+        <button class="toolbar-button" onclick="formatText('justifyRight')" title="По правому краю">
+          <span class="icon">➡️</span>
+        </button>
       </div>
 
       <!-- Insert -->
@@ -703,11 +856,11 @@
             <span>Вставить</span>
           </button>
           <div class="dropdown-menu" id="insert-menu">
-            <button class="dropdown-item" onclick="insertTable(); closeAllDropdowns();">
+            <button class="dropdown-item" onclick="showTableDialog(); closeAllDropdowns();">
               <span class="icon">📊</span>
               Таблица
             </button>
-            <button class="dropdown-item" onclick="insertLink(); closeAllDropdowns();">
+            <button class="dropdown-item" onclick="showLinkDialog(); closeAllDropdowns();">
               <span class="icon">🔗</span>
               Ссылка
             </button>
@@ -741,6 +894,21 @@
     <!-- Hidden file inputs -->
     <input type="file" id="fileInput" style="display: none" accept=".txt,.html,.doc,.docx,.pdf" />
     <input type="file" id="imageInput" style="display: none" accept="image/*" />
+
+    <!-- Modal overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Заголовок</h3>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Modal content will be inserted here -->
+        </div>
+        <div class="modal-footer" id="modalFooter">
+          <!-- Modal buttons will be inserted here -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -797,6 +965,13 @@
         }
       });
 
+      // Close modal when clicking overlay
+      document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      });
+
       // Keyboard shortcuts
       document.addEventListener('keydown', handleKeyboardShortcuts);
     }
@@ -835,7 +1010,7 @@
         return;
       }
 
-      if (confirm('Удалить вкладку?')) {
+      showConfirmDialog('Удалить вкладку?', 'Это действие нельзя отменить.', () => {
         const index = notes.findIndex(n => n.id === noteId);
         notes.splice(index, 1);
         
@@ -847,18 +1022,19 @@
         saveNotes();
         renderTabs();
         updateWordCount();
-      }
+      });
     }
 
     function renameTab(noteId) {
       const note = notes.find(n => n.id === noteId);
-      const newTitle = prompt('Новое название:', note.title);
-      if (newTitle && newTitle.trim()) {
-        note.title = newTitle.trim();
-        note.modified = new Date().toISOString();
-        saveNotes();
-        renderTabs();
-      }
+      showPromptDialog('Новое название:', note.title, (newTitle) => {
+        if (newTitle && newTitle.trim()) {
+          note.title = newTitle.trim();
+          note.modified = new Date().toISOString();
+          saveNotes();
+          renderTabs();
+        }
+      });
     }
 
     function renderTabs() {
@@ -894,43 +1070,240 @@
       updateWordCount();
     }
 
-    function insertTable() {
-      const rows = prompt('Количество строк:', '3');
-      const cols = prompt('Количество столбцов:', '3');
+    // Modal system
+    function showModal(title, body, footer) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = body;
+      document.getElementById('modalFooter').innerHTML = footer;
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    function showPromptDialog(message, defaultValue = '', callback) {
+      const body = `
+        <p style="margin-bottom: 1rem; color: var(--text-secondary);">${message}</p>
+        <input type="text" class="modal-input" id="promptInput" value="${defaultValue}" placeholder="Введите значение...">
+      `;
       
-      if (rows && cols && rows > 0 && cols > 0) {
-        let tableHTML = '<table>';
+      const footer = `
+        <button class="modal-button secondary" onclick="closeModal()">Отмена</button>
+        <button class="modal-button primary" onclick="handlePromptSubmit()">OK</button>
+      `;
+      
+      showModal('Ввод данных', body, footer);
+      
+      // Store callback for later use
+      window.currentPromptCallback = callback;
+      
+      // Focus input and select text
+      setTimeout(() => {
+        const input = document.getElementById('promptInput');
+        input.focus();
+        input.select();
         
-        // Header row
-        tableHTML += '<tr>';
-        for (let j = 0; j < cols; j++) {
-          tableHTML += `<th contenteditable>Заголовок ${j + 1}</th>`;
-        }
-        tableHTML += '</tr>';
-        
-        // Data rows
-        for (let i = 1; i < rows; i++) {
-          tableHTML += '<tr>';
-          for (let j = 0; j < cols; j++) {
-            tableHTML += `<td contenteditable>Ячейка ${i + 1}-${j + 1}</td>`;
+        // Handle Enter key
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            handlePromptSubmit();
+          } else if (e.key === 'Escape') {
+            closeModal();
           }
-          tableHTML += '</tr>';
-        }
-        
-        tableHTML += '</table>';
-        document.execCommand('insertHTML', false, tableHTML);
-        autoSave();
+        });
+      }, 100);
+    }
+
+    function handlePromptSubmit() {
+      const input = document.getElementById('promptInput');
+      const value = input.value;
+      closeModal();
+      if (window.currentPromptCallback) {
+        window.currentPromptCallback(value);
+        window.currentPromptCallback = null;
       }
     }
 
-    function insertLink() {
-      const url = prompt('Введите URL:');
-      const text = prompt('Текст ссылки:', url);
+    function showConfirmDialog(title, message, callback) {
+      const body = `<p style="color: var(--text-secondary);">${message}</p>`;
+      
+      const footer = `
+        <button class="modal-button secondary" onclick="closeModal()">Отмена</button>
+        <button class="modal-button primary" onclick="handleConfirmSubmit()">Подтвердить</button>
+      `;
+      
+      showModal(title, body, footer);
+      window.currentConfirmCallback = callback;
+    }
+
+    function handleConfirmSubmit() {
+      closeModal();
+      if (window.currentConfirmCallback) {
+        window.currentConfirmCallback();
+        window.currentConfirmCallback = null;
+      }
+    }
+
+    function showTableDialog() {
+      const body = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Строки:</label>
+            <input type="number" class="modal-input" id="tableRows" value="3" min="1" max="20">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Столбцы:</label>
+            <input type="number" class="modal-input" id="tableCols" value="3" min="1" max="10">
+          </div>
+        </div>
+      `;
+      
+      const footer = `
+        <button class="modal-button secondary" onclick="closeModal()">Отмена</button>
+        <button class="modal-button primary" onclick="handleTableSubmit()">Создать таблицу</button>
+      `;
+      
+      showModal('Создать таблицу', body, footer);
+    }
+
+    function handleTableSubmit() {
+      const rows = parseInt(document.getElementById('tableRows').value);
+      const cols = parseInt(document.getElementById('tableCols').value);
+      
+      if (rows && cols && rows > 0 && cols > 0) {
+        insertTable(rows, cols);
+        closeModal();
+      }
+    }
+
+    function showLinkDialog() {
+      const body = `
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">URL:</label>
+          <input type="url" class="modal-input" id="linkUrl" placeholder="https://example.com">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Текст ссылки:</label>
+          <input type="text" class="modal-input" id="linkText" placeholder="Текст ссылки">
+        </div>
+      `;
+      
+      const footer = `
+        <button class="modal-button secondary" onclick="closeModal()">Отмена</button>
+        <button class="modal-button primary" onclick="handleLinkSubmit()">Вставить ссылку</button>
+      `;
+      
+      showModal('Вставить ссылку', body, footer);
+    }
+
+    function handleLinkSubmit() {
+      const url = document.getElementById('linkUrl').value;
+      const text = document.getElementById('linkText').value;
       
       if (url) {
-        const linkHTML = `<a href="${url}" target="_blank">${text || url}</a>`;
-        document.execCommand('insertHTML', false, linkHTML);
+        insertLink(url, text || url);
+        closeModal();
+      }
+    }
+
+    function insertTable(rows = 3, cols = 3) {
+      let tableHTML = '<table>';
+      
+      // Add table controls
+      tableHTML += `
+        <div class="table-controls">
+          <button class="table-btn" onclick="addTableRow(this)">+ Строка</button>
+          <button class="table-btn" onclick="addTableCol(this)">+ Столбец</button>
+          <button class="table-btn" onclick="removeTableRow(this)">- Строка</button>
+          <button class="table-btn" onclick="removeTableCol(this)">- Столбец</button>
+        </div>
+      `;
+      
+      // Header row
+      tableHTML += '<tr>';
+      for (let j = 0; j < cols; j++) {
+        tableHTML += `<th contenteditable>Заголовок ${j + 1}</th>`;
+      }
+      tableHTML += '</tr>';
+      
+      // Data rows
+      for (let i = 1; i < rows; i++) {
+        tableHTML += '<tr>';
+        for (let j = 0; j < cols; j++) {
+          tableHTML += `<td contenteditable>Ячейка ${i + 1}-${j + 1}</td>`;
+        }
+        tableHTML += '</tr>';
+      }
+      
+      tableHTML += '</table>';
+      document.execCommand('insertHTML', false, tableHTML);
+      autoSave();
+    }
+
+    function insertLink(url, text) {
+      const linkHTML = `<a href="${url}" target="_blank">${text}</a>`;
+      document.execCommand('insertHTML', false, linkHTML);
+      autoSave();
+    }
+
+    // Table manipulation functions
+    function addTableRow(button) {
+      const table = button.closest('table');
+      const rows = table.querySelectorAll('tr');
+      const cols = rows[0].children.length;
+      
+      const newRow = document.createElement('tr');
+      for (let i = 0; i < cols; i++) {
+        const cell = document.createElement('td');
+        cell.contentEditable = true;
+        cell.textContent = `Новая ячейка ${i + 1}`;
+        newRow.appendChild(cell);
+      }
+      
+      table.appendChild(newRow);
+      autoSave();
+    }
+
+    function addTableCol(button) {
+      const table = button.closest('table');
+      const rows = table.querySelectorAll('tr');
+      
+      rows.forEach((row, index) => {
+        const cell = document.createElement(index === 0 ? 'th' : 'td');
+        cell.contentEditable = true;
+        cell.textContent = index === 0 ? 'Новый заголовок' : 'Новая ячейка';
+        row.appendChild(cell);
+      });
+      
+      autoSave();
+    }
+
+    function removeTableRow(button) {
+      const table = button.closest('table');
+      const rows = table.querySelectorAll('tr');
+      
+      if (rows.length > 2) { // Keep at least header + 1 data row
+        rows[rows.length - 1].remove();
         autoSave();
+      } else {
+        showNotification('Таблица должна содержать минимум одну строку данных', 'error');
+      }
+    }
+
+    function removeTableCol(button) {
+      const table = button.closest('table');
+      const rows = table.querySelectorAll('tr');
+      
+      if (rows[0].children.length > 1) { // Keep at least 1 column
+        rows.forEach(row => {
+          if (row.children.length > 0) {
+            row.removeChild(row.lastElementChild);
+          }
+        });
+        autoSave();
+      } else {
+        showNotification('Таблица должна содержать минимум один столбец', 'error');
       }
     }
 
@@ -939,6 +1312,41 @@
       autoSave();
       setSaveStatus('saved');
       showNotification('Документ сохранён', 'success');
+    }
+
+    function copyAllText() {
+      const editor = document.getElementById('editor');
+      const text = editor.innerText;
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showNotification('Текст скопирован в буфер обмена', 'success');
+        }).catch(() => {
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showNotification('Текст скопирован в буфер обмена', 'success');
+      } catch (err) {
+        showNotification('Не удалось скопировать текст', 'error');
+      }
+      
+      document.body.removeChild(textArea);
     }
 
     function saveAs(format) {
@@ -1100,7 +1508,18 @@
             e.preventDefault();
             formatText('underline');
             break;
+          case 'c':
+            if (e.shiftKey) {
+              e.preventDefault();
+              copyAllText();
+            }
+            break;
         }
+      }
+      
+      if (e.key === 'Escape') {
+        closeModal();
+        closeAllDropdowns();
       }
     }
 
@@ -1115,7 +1534,38 @@
 
     // Info dialog
     function showInfo() {
-      showNotification(`Текстовый редактор Pro v2.1\n\nВозможности:\n• Множественные вкладки\n• Форматирование текста\n• Таблицы и ссылки\n• Автосохранение\n• Тёмная тема\n• Экспорт в HTML/TXT\n• Горячие клавиши\n\nГорячие клавиши:\nCtrl+S - Сохранить\nCtrl+N - Новая вкладка\nCtrl+B - Жирный текст\nCtrl+I - Курсив\nCtrl+U - Подчёркивание`, 'info');
+      const body = `
+        <div style="line-height: 1.6; color: var(--text-secondary);">
+          <p><strong>Текстовый редактор Pro v2.2</strong></p>
+          <br>
+          <p><strong>Возможности:</strong></p>
+          <ul style="margin: 0.5rem 0 1rem 1.5rem;">
+            <li>Множественные вкладки</li>
+            <li>Форматирование текста</li>
+            <li>Динамические таблицы</li>
+            <li>Ссылки и изображения</li>
+            <li>Автосохранение</li>
+            <li>Тёмная тема</li>
+            <li>Экспорт в HTML/TXT</li>
+            <li>Копирование всего текста</li>
+          </ul>
+          <p><strong>Горячие клавиши:</strong></p>
+          <ul style="margin: 0.5rem 0 0 1.5rem;">
+            <li>Ctrl+S - Сохранить</li>
+            <li>Ctrl+N - Новая вкладка</li>
+            <li>Ctrl+B - Жирный текст</li>
+            <li>Ctrl+I - Курсив</li>
+            <li>Ctrl+U - Подчёркивание</li>
+            <li>Ctrl+Shift+C - Копировать всё</li>
+          </ul>
+        </div>
+      `;
+      
+      const footer = `
+        <button class="modal-button primary" onclick="closeModal()">Закрыть</button>
+      `;
+      
+      showModal('О программе', body, footer);
     }
 
     // Initialize app when page loads
