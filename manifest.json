@@ -2,7 +2,7 @@
   "name": "Текстовый редактор Pro",
   "short_name": "Редактор Pro",
   "description": "Современный текстовый редактор с поддержкой вкладок, форматирования и офлайн работы",
-  "start_url": "/text-editor-pro.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#6366f1",
@@ -29,7 +29,7 @@
       "name": "Новый документ",
       "short_name": "Новый",
       "description": "Создать новый документ",
-      "url": "/text-editor-pro.html?action=new",
+      "url": "/index.html?action=new",
       "icons": [
         {
           "src": "icon-192.png",
