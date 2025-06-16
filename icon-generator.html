@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    
+    <script>
+        function createIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#6366f1';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Document shape
+            const docWidth = size * 0.6;
+            const docHeight = size * 0.7;
+            const docX = (size - docWidth) / 2;
+            const docY = (size - docHeight) / 2;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(docX, docY, docWidth, docHeight);
+            
+            // Document corner fold
+            const foldSize = size * 0.1;
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.moveTo(docX + docWidth - foldSize, docY);
+            ctx.lineTo(docX + docWidth, docY + foldSize);
+            ctx.lineTo(docX + docWidth, docY);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Text lines
+            ctx.fillStyle = '#64748b';
+            const lineHeight = size * 0.03;
+            const lineWidth = docWidth * 0.7;
+            const startX = docX + docWidth * 0.15;
+            let startY = docY + docHeight * 0.3;
+            
+            for (let i = 0; i < 5; i++) {
+                const currentLineWidth = i === 4 ? lineWidth * 0.6 : lineWidth;
+                ctx.fillRect(startX, startY, currentLineWidth, lineHeight);
+                startY += lineHeight * 2;
+            }
+            
+            // Pen
+            const penLength = size * 0.3;
+            const penWidth = size * 0.02;
+            const penX = docX + docWidth + size * 0.05;
+            const penY = docY + docHeight - penLength;
+            
+            // Pen body
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(penX, penY, penWidth, penLength * 0.8);
+            
+            // Pen tip
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(penX, penY + penLength * 0.8, penWidth, penLength * 0.2);
+        }
+        
+        // Create both icons
+        createIcon(document.getElementById('canvas192'), 192);
+        createIcon(document.getElementById('canvas512'), 512);
+        
+        // Download function
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Auto download
+        setTimeout(() => {
+            downloadIcon('canvas192', 'icon-192.png');
+            setTimeout(() => {
+                downloadIcon('canvas512', 'icon-512.png');
+            }, 1000);
+        }, 1000);
+    </script>
+</body>
+</html>
+
